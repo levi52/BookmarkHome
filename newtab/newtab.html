@@ -16,9 +16,33 @@
 
     <!-- 搜索框 -->
     <div class="search-wrap">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
+      <!-- 搜索引擎切换按钮 -->
+      <button class="search-engine-btn" id="searchEngineBtn" title="切换搜索引擎">
+        <span class="search-engine-icon" id="searchEngineIcon">🔖</span>
+      </button>
+      <!-- 搜索引擎下拉菜单 -->
+      <div class="search-engine-menu" id="searchEngineMenu">
+        <button class="engine-item active" data-engine="bookmark">
+          <span class="engine-icon">🔖</span>
+          <span class="engine-name">收藏夹</span>
+        </button>
+        <button class="engine-item" data-engine="bing">
+          <span class="engine-icon">🔷</span>
+          <span class="engine-name">必应 Bing</span>
+        </button>
+        <button class="engine-item" data-engine="google">
+          <span class="engine-icon">🔍</span>
+          <span class="engine-name">谷歌 Google</span>
+        </button>
+        <button class="engine-item" data-engine="baidu">
+          <span class="engine-icon">🅱️</span>
+          <span class="engine-name">百度</span>
+        </button>
+        <button class="engine-item" data-engine="yandex">
+          <span class="engine-icon">🟡</span>
+          <span class="engine-name">Yandex</span>
+        </button>
+      </div>
       <input
         type="text"
         id="searchInput"

@@ -4,6 +4,17 @@
 // ─── 常量 ───────────────────────────────────────────────────
 const MAX_VISIBLE_BOOKMARKS = 6;
 
+// ─── 搜索引擎配置 ────────────────────────────────────────────
+const SEARCH_ENGINES = {
+  bookmark: { icon: '🔖', name: '收藏夹', placeholder: '搜索收藏夹...',   url: null },
+  bing:     { icon: '🔷', name: '必应',   placeholder: '用 Bing 搜索...',  url: 'https://www.bing.com/search?q=' },
+  google:   { icon: '🔍', name: '谷歌',   placeholder: '用 Google 搜索...', url: 'https://www.google.com/search?q=' },
+  baidu:    { icon: '🅱️', name: '百度',   placeholder: '用百度搜索...',    url: 'https://www.baidu.com/s?wd=' },
+  yandex:   { icon: '🟡', name: 'Yandex', placeholder: '用 Yandex 搜索...', url: 'https://yandex.com/search/?text=' },
+};
+
+let currentEngine = 'bookmark';   // 当前搜索引擎 key
+
 // 分类自动 Emoji 映射
 const CATEGORY_ICONS = [
   { keys: ['工作', 'work', '职场', '办公', 'job', 'office'], icon: '💼' },
@@ -472,8 +483,8 @@ function buildFolderCard(folder, index = 0) {
     });
   }
 
-  // 操作按钮：重命名 & 删除
-  card.querySelectorAll('.card-action-btn').forEach(btn => {
+  // 操作按钮：重命名 & 删除（仅限 category-header 内的按钮，排除书签条目里的按钮）
+  card.querySelectorAll('.category-header .card-action-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const action = btn.dataset.action;
@@ -684,13 +695,93 @@ function handleSearch(query) {
   }, 300);
 }
 
+// ─── 搜索引擎切换 ─────────────────────────────────────────────
+function setEngine(key) {
+  if (!SEARCH_ENGINES[key]) return;
+  currentEngine = key;
+  const eng = SEARCH_ENGINES[key];
+
+  // 更新图标
+  $('searchEngineIcon').textContent = eng.icon;
+
+  // 更新 placeholder
+  $('searchInput').placeholder = eng.placeholder;
+
+  // 更新菜单高亮
+  document.querySelectorAll('.engine-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.engine === key);
+  });
+
+  // 保存偏好
+  try { localStorage.setItem('bh-engine', key); } catch {}
+
+  // 若当前是收藏夹搜索，立刻触发一次搜索；否则隐藏收藏夹结果
+  const query = $('searchInput').value;
+  if (key === 'bookmark') {
+    handleSearch(query);
+  } else {
+    // 非收藏夹模式：隐藏收藏夹搜索结果区域
+    $('searchResults').classList.remove('visible');
+    $('categoriesGrid').style.display = '';
+    $('statsBar').style.display = '';
+    $('breadcrumb').style.display = navStack.length > 0 ? 'flex' : 'none';
+  }
+}
+
 // ─── 事件绑定 ────────────────────────────────────────────────
 function bindEvents() {
+  // ── 恢复上次使用的搜索引擎 ──
+  const savedEngine = (() => { try { return localStorage.getItem('bh-engine') || 'bookmark'; } catch { return 'bookmark'; } })();
+  setEngine(savedEngine);
+
+  // ── 搜索引擎切换按钮 ──
+  const engineBtn  = $('searchEngineBtn');
+  const engineMenu = $('searchEngineMenu');
+
+  engineBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    engineMenu.classList.toggle('open');
+  });
+
+  // 点击菜单项
+  engineMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.engine-item');
+    if (!item) return;
+    setEngine(item.dataset.engine);
+    engineMenu.classList.remove('open');
+    $('searchInput').focus();
+  });
+
+  // 点击外部关闭菜单
+  document.addEventListener('click', (e) => {
+    if (!engineBtn.contains(e.target) && !engineMenu.contains(e.target)) {
+      engineMenu.classList.remove('open');
+    }
+  });
+
   // 搜索
   $('searchInput').addEventListener('input', (e) => {
     const val = e.target.value;
     $('searchClear').classList.toggle('visible', val.length > 0);
-    handleSearch(val);
+    if (currentEngine === 'bookmark') {
+      handleSearch(val);
+    }
+  });
+
+  // Enter 键 → 外部搜索引擎跳转
+  $('searchInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const query = $('searchInput').value.trim();
+      if (!query) return;
+      if (currentEngine === 'bookmark') {
+        // 收藏夹搜索已实时显示，Enter 不做额外处理
+        return;
+      }
+      const eng = SEARCH_ENGINES[currentEngine];
+      if (eng && eng.url) {
+        window.open(eng.url + encodeURIComponent(query), '_blank', 'noopener');
+      }
+    }
   });
 
   $('searchClear').addEventListener('click', () => {
@@ -707,6 +798,7 @@ function bindEvents() {
       $('searchInput').focus();
     }
     if (e.key === 'Escape') {
+      engineMenu.classList.remove('open');
       $('searchInput').blur();
       $('searchInput').value = '';
       $('searchClear').classList.remove('visible');

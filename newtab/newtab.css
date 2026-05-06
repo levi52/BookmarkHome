@@ -143,14 +143,89 @@ body {
   position: relative;
 }
 
-.search-icon {
+/* 搜索引擎切换按钮 */
+.search-engine-btn {
   position: absolute;
-  left: 14px;
+  left: 6px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  z-index: 2;
+  transition: background 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 0;
+}
+.search-engine-btn:hover {
+  background: rgba(108, 99, 255, 0.12);
+  transform: translateY(-50%) scale(1.15);
+}
+.search-engine-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+.search-engine-icon {
+  line-height: 1;
   pointer-events: none;
-  transition: color var(--transition);
+  user-select: none;
+}
+
+/* 搜索引擎下拉菜单 */
+.search-engine-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  z-index: 200;
+  animation: scaleIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top left;
+}
+.search-engine-menu.open {
+  display: flex;
+}
+
+.engine-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font);
+  transition: all 0.15s ease;
+  text-align: left;
+  white-space: nowrap;
+}
+.engine-item:hover {
+  background: rgba(108, 99, 255, 0.1);
+  color: var(--accent-light);
+}
+.engine-item.active {
+  background: rgba(108, 99, 255, 0.15);
+  color: var(--accent);
+  font-weight: 600;
+}
+.engine-icon {
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 #searchInput {
@@ -159,7 +234,7 @@ body {
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 0 40px 0 42px;
+  padding: 0 40px 0 44px;
   font-size: 14px;
   color: var(--text-primary);
   outline: none;
@@ -173,8 +248,6 @@ body {
   box-shadow: 0 0 0 3px var(--accent-glow);
   background: var(--bg-card);
 }
-
-#searchInput:focus + .search-icon { color: var(--accent); }
 
 .search-clear {
   position: absolute;
